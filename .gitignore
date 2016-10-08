@@ -1,4 +1,5 @@
 /.idea
 credentials.json
 */target
+Server/src/main/resources/*.properties
 Client/src/main/java/me/coderleo/chitchat/client/gui/MainPanel_old.java
