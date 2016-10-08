@@ -1,0 +1,4 @@
+/.idea
+credentials.json
+*/target
+Client/src/main/java/me/coderleo/chitchat/client/gui/MainPanel_old.java
