@@ -11,11 +11,13 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import me.coderleo.chitchat.client.ServerConnector;
 import me.coderleo.chitchat.client.User;
+import me.coderleo.chitchat.client.managers.ConversationManager;
 import me.coderleo.chitchat.client.models.Conversation;
+import me.coderleo.chitchat.common.CommonConstants;
 import me.coderleo.chitchat.common.models.Message;
-import me.coderleo.chitchat.common.packets.client.conversation.PacketCSMessage;
+import me.coderleo.chitchat.common.packets.universal.PacketMessage;
 
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
 import java.util.Optional;
 
 public class ChatPanel extends AnchorPane
@@ -34,9 +36,8 @@ public class ChatPanel extends AnchorPane
     public ChatPanel(final Conversation conversation)
     {
         this.conversation = conversation;
-        conversation.addUser(new User(new String[] {"johndoe", "John", "2"}));
-        conversation.addUser(new User(new String[] {"jacksmith", "Jack", "2"}));
-
+        conversation.addUser(new User(new String[]{"johndoe", "John", "2"}));
+        conversation.addUser(new User(new String[]{"jacksmith", "Jack", "2"}));
 
         createMessageBox();
         createTextArea();
@@ -60,7 +61,8 @@ public class ChatPanel extends AnchorPane
 
         Button add = new Button("+");
         add.setStyle("-fx-border-radius: 0;");
-        add.setOnAction(e -> {
+        add.setOnAction(e ->
+        {
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Add User");
             dialog.setHeaderText(null);
@@ -68,7 +70,8 @@ public class ChatPanel extends AnchorPane
 
             Optional<String> result = dialog.showAndWait();
 
-            result.ifPresent(name -> {
+            result.ifPresent(name ->
+            {
                 // do stuff
             });
         });
@@ -86,6 +89,7 @@ public class ChatPanel extends AnchorPane
         textArea = new TextArea();
         textArea.setEditable(false);
         textArea.getStyleClass().add("message-textarea");
+//        textArea.setWrapText(true);
 
         getChildren().add(textArea);
     }
@@ -96,6 +100,17 @@ public class ChatPanel extends AnchorPane
         messageBox.setPromptText("Enter a message...");
         messageBox.setOnKeyPressed(this::handleKeyPress);
         messageBox.getStyleClass().add("message-box");
+
+        messageBox.lengthProperty().addListener((observable, oldValue, newValue) ->
+        {
+            if (newValue.intValue() > oldValue.intValue())
+            {
+                if (messageBox.getText().length() >= CommonConstants.MAX_MESSAGE_LENGTH)
+                {
+                    messageBox.setText(messageBox.getText().substring(0, CommonConstants.MAX_MESSAGE_LENGTH));
+                }
+            }
+        });
 
         if (!ServerConnector.getInstance().isConnected())
         {
@@ -113,20 +128,26 @@ public class ChatPanel extends AnchorPane
         if (e.getCode() == KeyCode.ENTER &&
                 !messageBox.getText().trim().isEmpty())
         {
-            ServerConnector.getInstance().sendPacket(new PacketCSMessage(messageBox.getText().trim(), conversation));
+            ServerConnector.getInstance().sendPacket(
+                    new PacketMessage(conversation, ConversationManager.getInstance().getLocalUser(), messageBox.getText().trim())
+            );
+
             messageBox.clear();
         }
     }
 
-    public void messageReceived(final Message message)
+    public void messageReceived(final Message message, boolean isSystem)
     {
         Platform.runLater(() ->
         {
-            String time = String.format("%s:%s %s",
-                    message.getWhen().get(Calendar.HOUR_OF_DAY),
-                    message.getWhen().get(Calendar.MINUTE),
-                    message.getWhen().get(Calendar.AM_PM) == Calendar.AM ? "AM" : "PM");
-            textArea.appendText("[" + time + "] " + message.getSender().getUsername() + ": " + message.getBody() + "\n");
+            if (isSystem)
+            {
+                textArea.appendText("SYSTEM: " + message.getBody().trim() + "\n");
+            } else
+            {
+                String time = new SimpleDateFormat("hh:mm a").format(message.getWhen().getTime());
+                textArea.appendText("[" + time + "] " + message.getSender() + ": " + message.getBody().trim() + "\n");
+            }
         });
     }
 

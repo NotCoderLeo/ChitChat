@@ -2,8 +2,15 @@ package me.coderleo.chitchat.server;
 
 import me.coderleo.chitchat.common.api.Packet;
 import me.coderleo.chitchat.common.models.AbstractUser;
+import me.coderleo.chitchat.common.packets.server.PacketConversationList;
+import me.coderleo.chitchat.common.packets.server.PacketUserList;
+import me.coderleo.chitchat.common.packets.universal.PacketUserJoin;
+import me.coderleo.chitchat.common.packets.universal.PacketUserLeave;
 import me.coderleo.chitchat.common.util.LogUtil;
+import me.coderleo.chitchat.server.data.SqlDataManager;
 import me.coderleo.chitchat.server.managers.ConversationManager;
+import me.coderleo.chitchat.server.models.Conversation;
+import me.coderleo.chitchat.server.models.ConversationData;
 import me.coderleo.chitchat.server.packethandlers.PacketHandlerManager;
 
 import javax.crypto.Cipher;
@@ -14,8 +21,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class User extends AbstractUser
 {
@@ -36,7 +45,19 @@ public class User extends AbstractUser
 
             Packet firstPacket = decrypt(inputStream.readObject());
 
-            PacketHandlerManager.getInstance().handle(firstPacket, this);
+            PacketHandlerManager.getInstance().handle(firstPacket, this, () ->
+            {
+                ConversationManager.getInstance().getAllUsers().stream()
+                        .filter(u -> !u.equals(this))
+                        .forEach(u -> u.send(new PacketUserJoin(this)));
+                send(new PacketUserList(ConversationManager.getInstance().getAllUsers()));
+
+                List<Conversation> conversations = SqlDataManager.getInstance().getForUser(this);
+                List<me.coderleo.chitchat.common.models.ConversationData> data = conversations.stream().map(Conversation::toLegacyData)
+                        .collect(Collectors.toList());
+
+                send(new PacketConversationList(data));
+            });
 
             new Thread(() ->
             {
@@ -45,7 +66,6 @@ public class User extends AbstractUser
                     try
                     {
                         Packet packet = decrypt(inputStream.readObject());
-                        LogUtil.info("%s", packet);
                         PacketHandlerManager.getInstance().handle(packet, this);
                     } catch (EOFException e)
                     {
@@ -59,6 +79,10 @@ public class User extends AbstractUser
 
                         ConversationManager.getInstance().removeUser(this);
 
+                        ConversationManager.getInstance().getAllUsers().stream()
+                                .filter(u -> !u.equals(this))
+                                .forEach(u -> u.send(new PacketUserLeave(this)));
+
                         break;
                     } catch (Exception e)
                     {
@@ -70,12 +94,15 @@ public class User extends AbstractUser
         {
             if (e instanceof EOFException)
             {
-                // perfectly normal
                 return;
             }
 
             System.out.println("Removing " + getUsername() + " because of " + e);
             ConversationManager.getInstance().removeUser(this);
+
+            ConversationManager.getInstance().getAllUsers().stream()
+                    .filter(u -> !u.equals(this))
+                    .forEach(u -> u.send(new PacketUserLeave(this)));
         }
     }
 
@@ -89,7 +116,6 @@ public class User extends AbstractUser
         try
         {
             outputStream.writeObject(packet);
-            LogUtil.debug("Sent packet to client: %s", packet);
         } catch (Exception e)
         {
             e.printStackTrace();

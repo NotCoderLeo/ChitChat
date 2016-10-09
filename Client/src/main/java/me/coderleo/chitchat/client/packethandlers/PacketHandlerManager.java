@@ -3,7 +3,6 @@ package me.coderleo.chitchat.client.packethandlers;
 import javafx.application.Platform;
 import me.coderleo.chitchat.client.packethandlers.auth.PacketLoginResponseHandler;
 import me.coderleo.chitchat.client.packethandlers.auth.PacketRegisterResponseHandler;
-import me.coderleo.chitchat.client.packethandlers.etc.SCMotdHandler;
 import me.coderleo.chitchat.common.api.Packet;
 
 import java.util.ArrayList;
@@ -21,14 +20,15 @@ public class PacketHandlerManager
 
     private PacketHandlerManager()
     {
-        handlers.add(new SCHiHandler());
-        handlers.add(new SCMessageHandler());
-        handlers.add(new SCMotdHandler());
-
-        // user
         handlers.add(new PacketLoginResponseHandler());
         handlers.add(new PacketRegisterResponseHandler());
         handlers.add(new LogoutHandler());
+
+        handlers.add(new PacketMessageHandler());
+        handlers.add(new PacketUserListHandler());
+        handlers.add(new PacketConversationListHandler());
+        handlers.add(new PacketUserJoinHandler());
+        handlers.add(new PacketUserLeaveHandler());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

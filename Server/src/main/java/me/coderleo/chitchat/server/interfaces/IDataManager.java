@@ -20,9 +20,14 @@ import java.util.List;
  * - create user
  * - create conversation
  * - update user password
+ * - get all users
+ * - loading conversations
+ * - saving conversations
  */
 public interface IDataManager
 {
+    List<AbstractUser> getAllUsers();
+
     AbstractUser getUserById(int id);
 
     AbstractUser getUserByName(String name);
@@ -30,6 +35,8 @@ public interface IDataManager
     Conversation getConversationById(int id);
 
     Conversation getConversationByName(String name);
+
+    void saveConversation(Conversation conversation);
 
     List<Conversation> getForUser(AbstractUser user);
 
@@ -42,4 +49,6 @@ public interface IDataManager
     Conversation createConversation(String name, List<AbstractUser> members);
 
     void updateUserPassword(AbstractUser user, String oldPass, String newPass);
+
+    void loadConversations();
 }

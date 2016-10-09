@@ -1,36 +1,34 @@
 package me.coderleo.chitchat.server.models;
 
 import me.coderleo.chitchat.common.models.AbstractConversation;
-import me.coderleo.chitchat.common.models.AbstractUser;
-import me.coderleo.chitchat.common.models.Message;
+import me.coderleo.chitchat.common.packets.universal.PacketMessage;
+import me.coderleo.chitchat.server.data.SqlDataManager;
+import me.coderleo.chitchat.server.managers.ConversationManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Conversation
 {
-    private final int id;
     private final String name;
-    private final ArrayList<AbstractUser> users;
+    private final int id;
+    private final ArrayList<String> members;
     private final ArrayList<Message> messages;
 
-    public Conversation(ConversationData conversationData)
+    public Conversation(ConversationData data)
     {
-        this(conversationData.getName(), conversationData.getId(), conversationData.getMembers());
+        this(data.getName(), data.getId(), data.getUsers());
     }
 
-    public Conversation(String name, int id, AbstractUser... users)
+    public Conversation(String name, int id, String... members)
     {
         this.name = name;
-        this.users = new ArrayList<>(Arrays.asList(users));
-        this.messages = new ArrayList<>();
         this.id = id;
-    }
-
-    public int getId()
-    {
-        return id;
+        this.members = new ArrayList<>(Arrays.asList(members));
+        this.messages = new ArrayList<>();
     }
 
     public String getName()
@@ -38,45 +36,34 @@ public class Conversation
         return name;
     }
 
-    public AbstractUser[] getUsers()
+    public ArrayList<String> getMembers()
     {
-        return users.toArray(new AbstractUser[users.size()]);
+        return members;
     }
 
-    public String getUsersWithCommas()
+    public void sendSystemMessage(String message)
     {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        for (AbstractUser user : users)
-        {
-            stringBuilder.append(user.getUsername()).append(",");
-        }
-
-        return stringBuilder.toString();
+        getMembers().stream().filter(u -> ConversationManager.getInstance().getUser(u) != null)
+                .map(ConversationManager.getInstance()::getUser)
+                .forEach(u -> u.send(new PacketMessage(toAbstract(), null, message, true)));
     }
 
-    public void addUser(AbstractUser user)
+
+    public void addUser(String user)
     {
-        users.add(user);
-//        MySQL.getInstance().saveChat(this);
+        members.add(user);
+        SqlDataManager.getInstance().saveConversation(this);
     }
 
-    public void removeUser(AbstractUser user)
+    public void removeUser(String user)
     {
-        users.remove(user);
-//        MySQL.getInstance().saveChat(this);
+        members.remove(user);
+        SqlDataManager.getInstance().saveConversation(this);
     }
 
-    public boolean hasUser(AbstractUser user)
+    public boolean hasUser(String user)
     {
-        return users.contains(user);
-    }
-
-    public me.coderleo.chitchat.common.models.ConversationData toData()
-    {
-        return new me.coderleo.chitchat.common.models.ConversationData(
-                getName(), getUsers()
-        );
+        return members.contains(user);
     }
 
     public Message[] getMessages()
@@ -84,12 +71,46 @@ public class Conversation
         return messages.toArray(new Message[messages.size()]);
     }
 
-    public Message addMessage(AbstractUser sender, AbstractConversation conversation, String msg, Calendar when)
+    public int getId()
     {
-        Message message = new Message(sender, conversation, msg, when);
+        return id;
+    }
+
+    public ConversationData toData()
+    {
+        return new ConversationData(
+                getName(), getMembers().toArray(new String[getMembers().size()]), getId());
+    }
+
+    public me.coderleo.chitchat.common.models.ConversationData toLegacyData()
+    {
+        return new me.coderleo.chitchat.common.models.ConversationData(
+                getName(), getId(), getMembers().toArray(new String[getMembers().size()]));
+    }
+
+    public void addMessage(String sender, String chat, String msg, Calendar when, boolean isSystem)
+    {
+        Message message = new Message(sender, chat, msg, when);
 
         messages.add(message);
+    }
 
-        return message;
+    public AbstractConversation toAbstract()
+    {
+        AbstractConversation abstractConversation = new AbstractConversation();
+        abstractConversation.setId(getId());
+        abstractConversation.setName(getName());
+        abstractConversation.setMembers(getMembers());
+        abstractConversation.setMessages(legacyMessages());
+        abstractConversation.setCreated(null);
+
+        return abstractConversation;
+    }
+
+    private List<me.coderleo.chitchat.common.models.Message> legacyMessages()
+    {
+        return Arrays.stream(getMessages())
+                .map(m -> new me.coderleo.chitchat.common.models.Message(m.getSender().getUsername(), m.getMessage(), m.getWhen()))
+                .collect(Collectors.toList());
     }
 }

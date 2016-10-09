@@ -4,14 +4,17 @@ import me.coderleo.chitchat.common.api.IUser;
 import me.coderleo.chitchat.common.tempdata.StatusCache;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class AbstractUser implements IUser
+public class AbstractUser implements IUser, Serializable
 {
     public enum UserStatus
     {
         ONLINE, AWAY, DO_NOT_DISTURB, INVISIBLE, OFFLINE
     }
+
+    private static final long serialVersionUID = -12884888489275L;
 
     private int userId;
     private boolean verified = false;

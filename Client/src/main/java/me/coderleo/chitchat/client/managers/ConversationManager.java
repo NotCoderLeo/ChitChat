@@ -1,5 +1,6 @@
 package me.coderleo.chitchat.client.managers;
 
+import me.coderleo.chitchat.client.Main;
 import me.coderleo.chitchat.client.User;
 import me.coderleo.chitchat.client.models.Conversation;
 
@@ -33,6 +34,8 @@ public class ConversationManager
     public void addConversation(Conversation conversation)
     {
         conversations.add(conversation);
+
+        Main.getInstance().getMainPanel().conversationAdded(conversation);
     }
 
     /**
@@ -42,7 +45,7 @@ public class ConversationManager
      */
     public void removeConversation(String name)
     {
-
+        removeConversation(getConversation(name));
     }
 
     /**
@@ -54,6 +57,8 @@ public class ConversationManager
     Conversation removeConversation(Conversation conversation)
     {
         conversations.remove(conversation);
+
+        Main.getInstance().getMainPanel().conversationRemoved(conversation);
 
         return conversation;
     }
@@ -71,6 +76,21 @@ public class ConversationManager
                 .findFirst()
                 .orElse(null);
     }
+
+    /**
+     * Find a conversation by ID.
+     *
+     * @param id The ID of the conversation
+     * @return The conversation
+     */
+    public Conversation getConversation(int id)
+    {
+        return conversations.stream()
+                .filter(c -> c.getId() == id)
+                .findFirst()
+                .orElse(null);
+    }
+
 
     /**
      * Get a user's conversations.
@@ -131,6 +151,11 @@ public class ConversationManager
         return Arrays.stream(names)
                 .map(this::getUser)
                 .collect(Collectors.toList());
+    }
+
+    public ArrayList<Conversation> getConversations()
+    {
+        return conversations;
     }
 
     public List<User> getAllUsers()

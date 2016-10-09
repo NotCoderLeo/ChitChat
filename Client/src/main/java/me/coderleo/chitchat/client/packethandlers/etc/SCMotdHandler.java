@@ -1,19 +1,18 @@
 package me.coderleo.chitchat.client.packethandlers.etc;
 
-import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import me.coderleo.chitchat.client.packethandlers.PacketHandler;
-import me.coderleo.chitchat.common.packets.server.etc.PacketSCMotd;
+import me.coderleo.chitchat.common.packets.server.etc.PacketSCMessage;
 
-public class SCMotdHandler extends PacketHandler<PacketSCMotd>
+public class SCMotdHandler extends PacketHandler<PacketSCMessage>
 {
     public SCMotdHandler()
     {
-        super(PacketSCMotd.class);
+        super(PacketSCMessage.class);
     }
 
     @Override
-    public void handle(PacketSCMotd packet)
+    public void handle(PacketSCMessage packet)
     {
 //        Platform.runLater(() -> {
         Alert.AlertType type = Alert.AlertType.INFORMATION;

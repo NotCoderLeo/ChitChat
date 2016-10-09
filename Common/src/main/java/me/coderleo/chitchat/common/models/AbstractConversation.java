@@ -7,11 +7,11 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public abstract class AbstractConversation
+public class AbstractConversation
 {
     protected int id;
-    protected List<AbstractUser> members = new ArrayList<>();
+    protected List<String> members = new ArrayList<>();
     protected String name;
-    protected List<Message> messages;
+    protected List<Message> messages = new ArrayList<>();
     protected Date created;
 }

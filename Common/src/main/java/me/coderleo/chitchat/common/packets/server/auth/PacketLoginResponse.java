@@ -16,11 +16,18 @@ public class PacketLoginResponse extends Packet
 
     private final String user;
     private final String response;
+    private final String message;
 
-    public PacketLoginResponse(String user, LoginResponse response)
+    public PacketLoginResponse(String user, LoginResponse response, String message)
     {
         this.user = user;
         this.response = response.name();
+        this.message = message;
+    }
+
+    public String getMessage()
+    {
+        return message;
     }
 
     public String getUser()

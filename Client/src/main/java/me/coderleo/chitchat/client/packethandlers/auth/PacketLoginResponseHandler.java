@@ -31,8 +31,8 @@ public class PacketLoginResponseHandler extends PacketHandler<PacketLoginRespons
         {
             Alert alert = new Alert(Alert.AlertType.ERROR);
 
-            alert.setTitle("Login failed.");
-            alert.setContentText("Something went wrong while signing you in. Sorry!");
+            alert.setTitle("Login failed!");
+            alert.setContentText(packet.getMessage() == null ? "Something went wrong while signing you in. Sorry!" : packet.getMessage());
 
             alert.showAndWait();
             ServerConnector.getInstance().disconnect();

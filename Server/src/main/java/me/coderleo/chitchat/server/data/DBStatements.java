@@ -50,6 +50,10 @@ public class DBStatements
                 "INSERT INTO conversations (name, isGroup) VALUES (?, ?)"
         ));
 
+        preparedStatements.put(Conversations.UPDATE_CONVERSATION, connection.prepareStatement(
+                "UPDATE conversations SET name = ? WHERE id = ?"
+        ));
+
         preparedStatements.put(Conversations.ADD_CONVERSATION_MEMBER, connection.prepareStatement(
                 "INSERT INTO conversation_members (user_id, conversation_id) VALUES (?, ?)"
         ));
@@ -60,6 +64,14 @@ public class DBStatements
 
         preparedStatements.put(Conversations.FIND_BY_NAME, connection.prepareStatement(
                 "SELECT * FROM conversations WHERE name = ?"
+        ));
+
+        preparedStatements.put(Conversations.FIND_ALL, connection.prepareStatement(
+                "SELECT * FROM conversations"
+        ));
+
+        preparedStatements.put(Conversations.FIND_MEMBERS, connection.prepareStatement(
+                "SELECT * FROM conversation_members WHERE conversation_id = ?"
         ));
     }
 
@@ -79,6 +91,10 @@ public class DBStatements
 
         preparedStatements.put(Users.FIND_BY_NAME, connection.prepareStatement(
                 "SELECT * FROM users WHERE username = ?"
+        ));
+
+        preparedStatements.put(Users.FIND_ALL, connection.prepareStatement(
+                "SELECT * FROM users"
         ));
 
         preparedStatements.put(Users.UPDATE_PASSWORD, connection.prepareStatement(

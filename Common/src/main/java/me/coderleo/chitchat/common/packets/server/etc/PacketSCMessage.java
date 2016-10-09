@@ -6,7 +6,7 @@ import me.coderleo.chitchat.common.api.Packet;
 
 @Data
 @EqualsAndHashCode
-public class PacketSCMotd extends Packet
+public class PacketSCMessage extends Packet
 {
     private static final long serialVersionUID = 1333773773245557373L;
 

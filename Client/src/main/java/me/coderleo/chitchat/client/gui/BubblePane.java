@@ -26,7 +26,7 @@ class BubblePane extends HBox
 
             conversation.getMembers().forEach(u -> {
                 HBox border = new HBox();
-                Text label = new Text(u.getDisplayName());
+                Text label = new Text(u);
 
                 border.getChildren().add(label);
                 getChildren().add(border);

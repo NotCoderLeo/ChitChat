@@ -1,9 +1,9 @@
 package me.coderleo.chitchat.server.managers;
 
 import me.coderleo.chitchat.common.models.AbstractConversation;
-import me.coderleo.chitchat.common.models.ConversationData;
 import me.coderleo.chitchat.server.User;
 import me.coderleo.chitchat.server.models.Conversation;
+import me.coderleo.chitchat.server.models.ConversationData;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class ConversationManager
         return conversation;
     }
 
-    public Conversation removeChat(String name)
+    public Conversation removeConversation(String name)
     {
         return removeConversation(getConversation(name));
     }
@@ -44,6 +44,11 @@ public class ConversationManager
         conversations.remove(conversation);
 
         return conversation;
+    }
+
+    public ArrayList<Conversation> getConversations()
+    {
+        return conversations;
     }
 
     public Conversation getConversation(String name)
@@ -63,7 +68,7 @@ public class ConversationManager
     public List<Conversation> getConversations(User user)
     {
         return conversations.stream()
-                .filter(c -> c.hasUser(user))
+                .filter(c -> c.hasUser(user.getUsername()))
                 .collect(Collectors.toList());
     }
 
@@ -76,7 +81,7 @@ public class ConversationManager
     public List<ConversationData> getConversationData(User user)
     {
         return conversations.stream()
-                .filter(c -> c.hasUser(user))
+                .filter(c -> c.hasUser(user.getUsername()))
                 .map(Conversation::toData)
                 .collect(Collectors.toList());
     }
@@ -88,6 +93,20 @@ public class ConversationManager
                 .anyMatch(p ->
                         p.getKey().equalsIgnoreCase(conversation.getName())
                                 && p.getValue() == conversation.getId());
+    }
+
+    public boolean hasConversation(int id)
+    {
+        return conversations.stream()
+                .anyMatch(c -> c.getId() == id);
+    }
+
+    public Conversation getConversationById(int id)
+    {
+        return conversations.stream()
+                .filter(c -> c.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     /**

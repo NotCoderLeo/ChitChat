@@ -1,19 +1,13 @@
 package me.coderleo.chitchat.server;
 
-import me.coderleo.chitchat.common.CommonConstants;
-import me.coderleo.chitchat.common.util.ConcurrentUtil;
 import me.coderleo.chitchat.common.util.LogUtil;
 import me.coderleo.chitchat.server.data.DBStatements;
-import me.coderleo.chitchat.server.managers.ConversationManager;
+import me.coderleo.chitchat.server.data.SqlDataManager;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.net.ServerSocket;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class ChitChatServer
 {
@@ -27,6 +21,7 @@ public class ChitChatServer
         try
         {
             DBStatements.getInstance();
+            SqlDataManager.getInstance().loadConversations();
 
 //            LogUtil.info("%s", SqlDataManager.getInstance().validateRegistration("jack", "potatotatotato"));
 

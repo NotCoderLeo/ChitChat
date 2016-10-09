@@ -16,9 +16,11 @@ public class PacketUserList extends Packet
 
     private String[] users;
 
-    public PacketUserList(final String[] users)
+    public PacketUserList(final List<? extends AbstractUser> users)
     {
-        this.users = users;
+        List<String> converted = convert(users);
+
+        this.users = converted.toArray(new String[converted.size()]);
     }
 
     public String[] getUsers()

@@ -1,5 +1,6 @@
 package me.coderleo.chitchat.client.gui;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -14,9 +15,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 import me.coderleo.chitchat.client.Main;
+import me.coderleo.chitchat.client.managers.ConversationManager;
 import me.coderleo.chitchat.client.models.Conversation;
-import me.coderleo.chitchat.common.models.AbstractUser;
-import me.coderleo.chitchat.common.models.ConversationData;
 
 import java.util.Random;
 
@@ -29,6 +29,7 @@ public class MainPanel extends BorderPane
     private Conversation currentConversation;
 
     private final Random random = new Random();
+    private ListView<Conversation> conversationList;
 
     public MainPanel()
     {
@@ -77,11 +78,9 @@ public class MainPanel extends BorderPane
         VBox box = new VBox();
         VBox.setVgrow(box, Priority.ALWAYS);
 
-        ListView<Conversation> conversationList = new ListView<>();
-        conversationList.setItems(FXCollections.observableArrayList(
-                new Conversation(new ConversationData("testing", new AbstractUser[0])),
-                new Conversation(new ConversationData("testing 2", new AbstractUser[0]))
-        ));
+        conversationList = new ListView<>();
+
+        conversationList.setItems(FXCollections.observableArrayList(ConversationManager.getInstance().getConversations()));
 
         conversationList.setCellFactory(new Callback<ListView<Conversation>, ListCell<Conversation>>()
         {
@@ -145,5 +144,15 @@ public class MainPanel extends BorderPane
     public ChatPanel getChatPanel()
     {
         return chatPanel;
+    }
+
+    public void conversationAdded(final Conversation conversation)
+    {
+        Platform.runLater(() -> conversationList.getItems().add(conversation));
+    }
+
+    public void conversationRemoved(final Conversation conversation)
+    {
+        Platform.runLater(() -> conversationList.getItems().remove(conversation));
     }
 }

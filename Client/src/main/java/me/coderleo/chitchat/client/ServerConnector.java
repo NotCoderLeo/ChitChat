@@ -70,7 +70,7 @@ public class ServerConnector
                     try
                     {
                         Packet packet = (Packet) inputStream.readObject();
-                        LogUtil.info("Received packet from server: %s", packet);
+//                        LogUtil.info("Received packet from server: %s", packet);
 
                         handlePacket(packet);
                     } catch (EOFException e)
@@ -87,6 +87,7 @@ public class ServerConnector
                         }
 
                         socket = null;
+                        Main.getInstance().setTitle("ChitChat");
                         Main.getInstance().showLoginPanel();
 
                         break;
@@ -161,7 +162,6 @@ public class ServerConnector
             c.init(Cipher.ENCRYPT_MODE, key);
 
             outputStream.writeObject(new SealedObject(packet, c));
-            LogUtil.info("Sent packet to server: %s", packet);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException | IllegalBlockSizeException e)
         {
             e.printStackTrace();
